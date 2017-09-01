@@ -1,0 +1,6 @@
+{
+  "tap_name": "zendesk-chat",
+  "project_name": "tap-{{cookiecutter.tap_name}}",
+  "project_slug": "{{cookiecutter.project_name}}",
+  "package_name": "{{cookiecutter.project_name.replace('-','_')}}"
+}

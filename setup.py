@@ -7,7 +7,7 @@ setup(name="{{cookiecutter.project_name}}",
       author="Stitch",
       url="http://singer.io",
       classifiers=["Programming Language :: Python :: 3 :: Only"],
-      py_modules=["{{cookiecutter.project_slug}}"],
+      py_modules=["{{cookiecutter.package_name}}"],
       install_requires=[
           "singer-python>=3.2.0",
           "requests",
@@ -16,11 +16,11 @@ setup(name="{{cookiecutter.project_name}}",
       ],
       entry_points="""
           [console_scripts]
-          {{cookiecutter.project_name}}={{cookiecutter.project_slug}}:main
+          {{cookiecutter.project_name}}={{cookiecutter.package_name}}:main
       """,
-      packages=["{{cookiecutter.project_slug}}"],
+      packages=["{{cookiecutter.package_name}}"],
       package_data = {
-          "schemas": ["{{cookiecutter.project_slug}}/schemas/*.json"]
+          "schemas": ["{{cookiecutter.package_name}}/schemas/*.json"]
       },
       include_package_data=True,
 )

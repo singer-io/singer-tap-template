@@ -1,2 +1,2 @@
 include LICENSE
-include {{cookiecutter.project_slug}}/schemas/*.json
+include {{cookiecutter.package_name}}/schemas/*.json
