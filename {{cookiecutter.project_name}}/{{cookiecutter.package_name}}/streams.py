@@ -1,52 +1,39 @@
+from singer import metrics
+import pendulum
+import time
+from datetime import datetime, timedelta
+from requests.exceptions import HTTPError
 import attr
-from .http import Client
+import json
+import singer
+
+LOGGER = singer.get_logger()
 
 
-class Puller(object):
-    def prepare(self, config, state, tap_stream_id, client=None):
-        self.config = config
-        self.state = state
-        self.tap_stream_id = tap_stream_id
-        self.client = client or Client(config)
-        return self
-
-    @property
-    def _bookmark(self):
-        if "bookmarks" not in self.state:
-            self.state["bookmarks"] = {}
-        if self.tap_stream_id not in self.state["bookmarks"]:
-            self.state["bookmarks"][self.tap_stream_id] = {}
-        return self.state["bookmarks"][self.tap_stream_id]
-
-    def _set_last_updated(self, key, updated_at):
-        if isinstance(updated_at, datetime):
-            updated_at = updated_at.isoformat()
-        self._bookmark[key] = updated_at
-
-    def _update_start_state(self, key):
-        if not self._bookmark.get(key):
-            self._set_last_updated(key, self.config["start_date"])
-        return self._bookmark[key]
-
-
-class Everything(Puller):
-    def yield_pages(self):
-        page = self.client.request(self.tap_stream_id)
-        if page:
-            yield page if type(page) == list else [page]
-
-
-@attr.s
 class Stream(object):
-    tap_stream_id = attr.ib()
-    pk_fields = attr.ib()
-    puller = attr.ib()
-    formatter = attr.ib(default=None)
-    def format_page(self, page):
-        if self.formatter:
-            return self.formatter(page)
-        return page
+    """Information about and functions for syncing streams.
 
+    Important class properties:
 
-STREAMS = [
+    :var tap_stream_id:
+    :var pk_fields: A list of primary key fields"""
+    def __init__(self, tap_stream_id, pk_fields):
+        self.tap_stream_id = tap_stream_id
+        self.pk_fields = pk_fields
+
+    def metrics(self, page):
+        with metrics.record_counter(self.tap_stream_id) as counter:
+            counter.increment(len(page))
+
+    def format_response(self, response):
+        return [response] if type(response) != list else response
+
+    def write_page(self, page):
+        """Formats a list of records in place and outputs the data to
+        stdout."""
+        singer.write_records(self.tap_stream_id, page)
+        self.metrics(page)
+
+all_streams = [
 ]
+all_stream_ids = [s.tap_stream_id for s in all_streams]
