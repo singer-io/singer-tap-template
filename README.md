@@ -15,7 +15,7 @@ $ cookiecutter https://github.com/b-ryan/cookiecutter-singer-tap.git
 project_name [tap-zendesk-chat]: tap-foobar
 package_name [tap_foobar]:
 $ # For the package_name, I just hit enter since tap_foobar is what I wanted
-$ cd tap_foobar
+$ cd tap-foobar
 ```
 
 Now that the project exists, you can make a virtualenv and invoke the tap:
