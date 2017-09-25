@@ -11,8 +11,6 @@ setup(name="{{cookiecutter.project_name}}",
       install_requires=[
           "singer-python>=3.2.0",
           "requests",
-          "backoff",
-          "attrs",
       ],
       entry_points="""
           [console_scripts]
