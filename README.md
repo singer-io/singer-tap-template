@@ -33,11 +33,6 @@ tap-foobar: error: the following arguments are required: -c/--config
 
 Now you build the tap!
 
-## Example
-
-You will be asked for some info about the tap and then a project will be
-created for you.
-
 ## Example Taps
 
 These taps were built using this template:
