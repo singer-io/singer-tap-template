@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import os
 import singer
-from singer import metrics, utils
+from singer import utils
 import json
 from .streams import all_streams, all_stream_ids
 from .context import Context
-from collections import namedtuple
-from singer.catalog import Catalog
+from singer.catalog import Catalog, CatalogEntry, Schema
 
 REQUIRED_CONFIG_KEYS = ["start_date"]
 LOGGER = singer.get_logger()
@@ -29,17 +28,17 @@ def load_schema(tap_stream_id):
 
 
 def discover():
-    result = {"streams": []}
+    catalog = Catalog([])
     for stream in all_streams:
-        schema = load_schema(stream.tap_stream_id)
-        schema["selected"] = True
-        result["streams"].append(
-            dict(stream=stream.tap_stream_id,
-                 tap_stream_id=stream.tap_stream_id,
-                 key_properties=stream.pk_fields,
-                 schema=schema)
-        )
-    return Catalog.from_dict(result)
+        schema = Schema.from_dict(load_schema(stream.tap_stream_id),
+                                  inclusion="automatic")
+        catalog.streams.append(CatalogEntry(
+            stream=stream.tap_stream_id,
+            tap_stream_id=stream.tap_stream_id,
+            key_properties=stream.pk_fields,
+            schema=schema,
+        ))
+    return catalog
 
 
 def output_schema(stream):
@@ -51,12 +50,12 @@ def sync(ctx):
     currently_syncing = ctx.state.get("currently_syncing")
     start_idx = all_stream_ids.index(currently_syncing) \
         if currently_syncing else 0
+    stream_ids_to_sync = [cs.tap_stream_id for cs in ctx.catalog.streams
+                          if cs.is_selected()]
     streams = [s for s in all_streams[start_idx:]
-               if s.tap_stream_id in
-               [s.tap_stream_id for s in ctx.catalog.streams]]
+               if s.tap_stream_id in stream_ids_to_sync]
     for stream in streams:
         output_schema(stream)
-    for stream in streams:
         ctx.state["currently_syncing"] = stream.tap_stream_id
         ctx.write_state()
         stream.sync(ctx)
@@ -72,8 +71,7 @@ def main():
     else:
         catalog = Catalog.from_dict(args.properties) \
             if args.properties else discover()
-        ctx = Context(args.config, args.state, catalog)
-        sync(ctx)
+        sync(Context(args.config, args.state, catalog))
 
 if __name__ == "__main__":
     main()
