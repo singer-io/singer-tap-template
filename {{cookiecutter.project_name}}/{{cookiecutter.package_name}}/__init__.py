@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import os
+import json
 import singer
 from singer import utils
-import json
-from .streams import all_streams, all_stream_ids
-from .context import Context
 from singer.catalog import Catalog, CatalogEntry, Schema
+from . import streams as streams_
+from .context import Context
 
 REQUIRED_CONFIG_KEYS = ["start_date"]
 LOGGER = singer.get_logger()
@@ -34,7 +34,7 @@ def check_credentials_are_authorized(config):
 def discover(config):
     check_credentials_are_authorized(config)
     catalog = Catalog([])
-    for stream in all_streams:
+    for stream in streams_.all_streams:
         schema = Schema.from_dict(load_schema(stream.tap_stream_id),
                                   inclusion="automatic")
         catalog.streams.append(CatalogEntry(
@@ -53,11 +53,11 @@ def output_schema(stream):
 
 def sync(ctx):
     currently_syncing = ctx.state.get("currently_syncing")
-    start_idx = all_stream_ids.index(currently_syncing) \
+    start_idx = streams_.all_stream_ids.index(currently_syncing) \
         if currently_syncing else 0
     stream_ids_to_sync = [cs.tap_stream_id for cs in ctx.catalog.streams
                           if cs.is_selected()]
-    streams = [s for s in all_streams[start_idx:]
+    streams = [s for s in streams_.all_streams[start_idx:]
                if s.tap_stream_id in stream_ids_to_sync]
     for stream in streams:
         output_schema(stream)
@@ -83,7 +83,7 @@ def main():
     try:
         main_impl()
     except Exception as exc:
-        LOGGER.critical("unknown top-level tap exception", exc_info=exc)
+        LOGGER.critical(exc)
         raise
 
 if __name__ == "__main__":
