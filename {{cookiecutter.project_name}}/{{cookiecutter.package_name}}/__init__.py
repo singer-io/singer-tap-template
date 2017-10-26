@@ -27,7 +27,12 @@ def load_schema(tap_stream_id):
     return schema
 
 
-def discover():
+def check_credentials_are_authorized(config):
+    pass
+
+
+def discover(config):
+    check_credentials_are_authorized(config)
     catalog = Catalog([])
     for stream in all_streams:
         schema = Schema.from_dict(load_schema(stream.tap_stream_id),
@@ -63,15 +68,23 @@ def sync(ctx):
     ctx.write_state()
 
 
-def main():
+def main_impl():
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
     if args.discover:
-        discover().dump()
+        discover(args.config).dump()
         print()
     else:
         catalog = Catalog.from_dict(args.properties) \
-            if args.properties else discover()
+            if args.properties else discover(args.config)
         sync(Context(args.config, args.state, catalog))
+
+
+def main():
+    try:
+        main_impl()
+    except Exception as exc:
+        LOGGER.critical("unknown top-level tap exception", exc_info=exc)
+        raise
 
 if __name__ == "__main__":
     main()
