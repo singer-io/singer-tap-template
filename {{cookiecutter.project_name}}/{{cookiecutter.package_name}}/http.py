@@ -27,20 +27,21 @@ class Client(object):
         return _join(BASE_URL, path)
 
     def create_get_request(self, path, **kwargs):
-        return requests.Request(
-            method="GET",
-            url=self.url(path),
-            **kwargs,
-        )
+        return requests.Request(method="GET", url=self.url(path), **kwargs)
 
     @backoff.on_exception(backoff.expo,
                           RateLimitException,
                           max_tries=10,
                           factor=2)
-    def request_with_handling(self, tap_stream_id, request):
+    def request_with_handling(self, request, tap_stream_id):
         with metrics.http_request_timer(tap_stream_id) as timer:
             response = self.prepare_and_send(request)
             timer.tags[metrics.Tag.http_status_code] = response.status_code
-        # FIXME raise RateLimitException appropriately
+        if response.status_code in [429, 503]:
+            raise RateLimitException()
         response.raise_for_status()
         return response.json()
+
+    def GET(self, request_kwargs, *args, **kwargs):
+        req = self.create_get_request(**request_kwargs)
+        return self.request_with_handling(req, *args, **kwargs)

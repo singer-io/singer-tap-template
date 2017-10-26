@@ -1,10 +1,6 @@
-from singer import metrics
-import pendulum
-import time
-from datetime import datetime, timedelta
-from requests.exceptions import HTTPError
-import json
 import singer
+from singer import metrics
+from singer.transform import transform as tform
 
 LOGGER = singer.get_logger()
 
@@ -20,18 +16,20 @@ class Stream(object):
         self.tap_stream_id = tap_stream_id
         self.pk_fields = pk_fields
 
-    def metrics(self, page):
+    def metrics(self, records):
         with metrics.record_counter(self.tap_stream_id) as counter:
-            counter.increment(len(page))
+            counter.increment(len(records))
 
-    def format_response(self, response):
-        return [response] if type(response) != list else response
+    def write_records(self, records):
+        singer.write_records(self.tap_stream_id, records)
+        self.metrics(records)
 
-    def write_page(self, page):
-        """Formats a list of records in place and outputs the data to
-        stdout."""
-        singer.write_records(self.tap_stream_id, page)
-        self.metrics(page)
+    def transform(self, ctx, records):
+        ret = []
+        for record in records:
+            ret.append(tform(record, ctx.schema_dicts[self.tap_stream_id]))
+        return ret
+
 
 all_streams = [
 ]
