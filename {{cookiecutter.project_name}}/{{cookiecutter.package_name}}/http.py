@@ -9,6 +9,10 @@ class RateLimitException(Exception):
     pass
 
 
+def _join(a, b):
+    return a.rstrip("/") + "/" + b.lstrip("/")
+
+
 class Client(object):
     def __init__(self, config):
         self.user_agent = config.get("user_agent")
