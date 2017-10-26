@@ -4,11 +4,38 @@ from .http import Client
 
 
 class Context(object):
-    def __init__(self, config, state, catalog):
+    """Represents a collection of global objects necessary for performing
+    discovery or for running syncs. Notably, it contains
+
+    - config  - The JSON structure from the config.json argument
+    - state   - The mutable state dict that is shared among streams
+    - client  - An HTTP client object for interacting with Close.io
+    - catalog - A singer.catalog.Catalog. Note this will be None during
+                discovery.
+    """
+    def __init__(self, config, state):
         self.config = config
         self.state = state
-        self.catalog = catalog
         self.client = Client(config)
+        self._catalog = None
+        self.selected_stream_ids = None
+        self.schema_dicts = None
+
+    @property
+    def catalog(self):
+        return self._catalog
+
+    @catalog.setter
+    def catalog(self, catalog):
+        self._catalog = catalog
+        self.selected_stream_ids = set(
+            [s.tap_stream_id for s in catalog.streams
+             if s.is_selected()]
+        )
+        self.schema_dicts = {
+            stream.tap_stream_id: stream.schema.to_dict()
+            for stream in catalog.streams
+        }
 
     def get_bookmark(self, path):
         return bks_.get_bookmark(self.state, *path)
