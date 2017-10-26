@@ -18,18 +18,28 @@ class Client(object):
         self.user_agent = config.get("user_agent")
         self.session = requests.Session()
 
+    def prepare_and_send(self, request):
+        if self.user_agent:
+            request.headers["User-Agent"] = self.user_agent
+        return self.session.send(request.prepare())
+
+    def url(self, path):
+        return _join(BASE_URL, path)
+
+    def create_get_request(self, path, **kwargs):
+        return requests.Request(
+            method="GET",
+            url=self.url(path),
+            **kwargs,
+        )
+
     @backoff.on_exception(backoff.expo,
                           RateLimitException,
                           max_tries=10,
                           factor=2)
-    def request(self, tap_stream_id, params={}, headers={}):
+    def request_with_handling(self, tap_stream_id, request):
         with metrics.http_request_timer(tap_stream_id) as timer:
-            url = None  # FIXME
-            headers = headers.copy()
-            if self.user_agent:
-                headers["User-Agent"] = self.user_agent
-            request = requests.Request("GET", url, headers=headers, params=params)
-            response = self.session.send(request.prepare())
+            response = self.prepare_and_send(request)
             timer.tags[metrics.Tag.http_status_code] = response.status_code
         # FIXME raise RateLimitException appropriately
         response.raise_for_status()
