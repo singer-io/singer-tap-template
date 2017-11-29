@@ -11,7 +11,7 @@ class Context(object):
 
     - config  - The JSON structure from the config.json argument
     - state   - The mutable state dict that is shared among streams
-    - client  - An HTTP client object for interacting with Close.io
+    - client  - An HTTP client object for interacting with the API
     - catalog - A singer.catalog.Catalog. Note this will be None during
                 discovery.
     """
