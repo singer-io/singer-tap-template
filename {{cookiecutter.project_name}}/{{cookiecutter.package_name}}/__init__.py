@@ -6,33 +6,10 @@ from singer import utils
 from singer.catalog import Catalog, CatalogEntry, Schema
 from . import streams as streams_
 from .context import Context
+from . import schemas
 
-REQUIRED_CONFIG_KEYS = ["start_date"]
+REQUIRED_CONFIG_KEYS = ["start_date", "username", "password"]
 LOGGER = singer.get_logger()
-
-
-def get_abs_path(path):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
-
-
-def load_schema(ctx, tap_stream_id):
-    path = "schemas/{}.json".format(tap_stream_id)
-    schema = utils.load_json(get_abs_path(path))
-    dependencies = schema.pop("tap_schema_dependencies", [])
-    refs = {}
-    for sub_stream_id in dependencies:
-        refs[sub_stream_id] = load_schema(ctx, sub_stream_id)
-    if refs:
-        singer.resolve_schema_references(schema, refs)
-    return schema
-
-
-def load_and_write_schema(ctx, stream):
-    singer.write_schema(
-        stream.tap_stream_id,
-        load_schema(ctx, stream.tap_stream_id),
-        stream.pk_fields,
-    )
 
 
 def check_credentials_are_authorized(ctx):
@@ -42,30 +19,22 @@ def check_credentials_are_authorized(ctx):
 def discover(ctx):
     check_credentials_are_authorized(ctx)
     catalog = Catalog([])
-    for stream in streams_.all_streams:
-        schema = Schema.from_dict(load_schema(ctx, stream.tap_stream_id),
+    for tap_stream_id in schemas.stream_ids:
+        schema = Schema.from_dict(schemas.load_schema(tap_stream_id),
                                   inclusion="automatic")
         catalog.streams.append(CatalogEntry(
-            stream=stream.tap_stream_id,
-            tap_stream_id=stream.tap_stream_id,
-            key_properties=stream.pk_fields,
+            stream=tap_stream_id,
+            tap_stream_id=tap_stream_id,
+            key_properties=schemas.PK_FIELDS[tap_stream_id],
             schema=schema,
         ))
     return catalog
 
 
 def sync(ctx):
-    currently_syncing = ctx.state.get("currently_syncing")
-    start_idx = streams_.all_stream_ids.index(currently_syncing) \
-        if currently_syncing else 0
-    streams = [s for s in streams_.all_streams[start_idx:]
-               if s.tap_stream_id in ctx.selected_stream_ids]
-    for stream in streams:
-        ctx.state["currently_syncing"] = stream.tap_stream_id
-        ctx.write_state()
-        load_and_write_schema(ctx, stream)
-        stream.sync(ctx)
-    ctx.state["currently_syncing"] = None
+    for tap_stream_id in ctx.selected_stream_ids:
+        schemas.load_and_write_schema(tap_stream_id)
+    streams_.sync_lists(ctx)
     ctx.write_state()
 
 

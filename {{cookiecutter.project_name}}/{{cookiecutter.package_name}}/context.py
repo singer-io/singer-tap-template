@@ -1,6 +1,8 @@
+from datetime import datetime, date
+import pendulum
 import singer
 from singer import bookmarks as bks_
-from .http import Client
+from .http import get_client
 
 
 class Context(object):
@@ -16,10 +18,10 @@ class Context(object):
     def __init__(self, config, state):
         self.config = config
         self.state = state
-        self.client = Client(config)
+        self.client = get_client(config)
         self._catalog = None
         self.selected_stream_ids = None
-        self.schema_dicts = None
+        self.now = datetime.utcnow()
 
     @property
     def catalog(self):
@@ -32,15 +34,13 @@ class Context(object):
             [s.tap_stream_id for s in catalog.streams
              if s.is_selected()]
         )
-        self.schema_dicts = {
-            stream.tap_stream_id: stream.schema.to_dict()
-            for stream in catalog.streams
-        }
 
     def get_bookmark(self, path):
         return bks_.get_bookmark(self.state, *path)
 
     def set_bookmark(self, path, val):
+        if isinstance(val, date):
+            val = val.isoformat()
         bks_.write_bookmark(self.state, path[0], path[1], val)
 
     def get_offset(self, path):
@@ -58,7 +58,7 @@ class Context(object):
         if not val:
             val = self.config["start_date"]
             self.set_bookmark(path, val)
-        return val
+        return pendulum.parse(val)
 
     def write_state(self):
         singer.write_state(self.state)
