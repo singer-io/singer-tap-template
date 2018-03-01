@@ -11,7 +11,7 @@ Below I will initialize the "tap-foobar" project:
 ```bash
 $ pip install cookiecutter
 $ # the next command will ask for some input:
-$ cookiecutter https://github.com/singer-io/cookiecutter-singer-tap.git
+$ cookiecutter https://github.com/singer-io/singer-tap-template.git
 project_name [tap-zendesk-chat]: tap-foobar
 package_name [tap_foobar]:
 $ # For the package_name, I just hit enter since tap_foobar is what I wanted
