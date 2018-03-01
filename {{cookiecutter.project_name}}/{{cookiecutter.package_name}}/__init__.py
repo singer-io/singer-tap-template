@@ -37,8 +37,8 @@ def sync(ctx):
     streams_.sync_lists(ctx)
     ctx.write_state()
 
-
-def main_impl():
+@utils.handle_top_exception(LOGGER)
+def main():
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
     ctx = Context(args.config, args.state)
     if args.discover:
@@ -48,14 +48,6 @@ def main_impl():
         ctx.catalog = Catalog.from_dict(args.properties) \
             if args.properties else discover(ctx)
         sync(ctx)
-
-
-def main():
-    try:
-        main_impl()
-    except Exception as exc:
-        LOGGER.critical(exc)
-        raise
 
 if __name__ == "__main__":
     main()
