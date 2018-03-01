@@ -2,7 +2,7 @@ from datetime import datetime, date
 import pendulum
 import singer
 from singer import bookmarks as bks_
-from .http import get_client
+from .http import Client
 
 
 class Context(object):
@@ -18,7 +18,7 @@ class Context(object):
     def __init__(self, config, state):
         self.config = config
         self.state = state
-        self.client = get_client(config)
+        self.client = Client(config)
         self._catalog = None
         self.selected_stream_ids = None
         self.now = datetime.utcnow()
