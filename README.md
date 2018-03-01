@@ -24,7 +24,7 @@ Now that the project exists, you can make a virtualenv and invoke the tap:
 $ python3 -m venv ~/.virtualenvs/tap-foobar
 $ source ~/.virtualenvs/tap-foobar/bin/activate
 ...
-$ pip install .
+$ pip install -e .
 ...
 $ tap-foobar
 usage: tap-foobar [-h] -c CONFIG [-s STATE] [-p PROPERTIES]
