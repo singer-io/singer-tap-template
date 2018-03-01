@@ -12,7 +12,7 @@ Below I will initialize the "tap-foobar" project:
 $ pip install cookiecutter
 $ # the next command will ask for some input:
 $ cookiecutter https://github.com/singer-io/singer-tap-template.git
-project_name [tap-zendesk-chat]: tap-foobar
+project_name [e.g. 'tap-facebook']: tap-foobar
 package_name [tap_foobar]:
 $ # For the package_name, I just hit enter since tap_foobar is what I wanted
 $ cd tap-foobar
@@ -21,9 +21,10 @@ $ cd tap-foobar
 Now that the project exists, you can make a virtualenv and invoke the tap:
 
 ```bash
-$ mkvirtualenv -p $(which python3) tap-foobar
+$ python3 -m venv ~/.virtualenvs/tap-foobar
+$ source ~/.virtualenvs/tap-foobar/bin/activate
 ...
-$ ./setup.py develop
+$ pip install .
 ...
 $ tap-foobar
 usage: tap-foobar [-h] -c CONFIG [-s STATE] [-p PROPERTIES]
