@@ -1,7 +1,7 @@
 FROM 218546966473.dkr.ecr.us-east-1.amazonaws.com/singer-base:0.0.1
  
 # The orchestrator needs all these params tap_name should be the name of
-tap-facebook# the source without the word "tap", for example "closeio". tap_version
+# the source without the word "tap", for example "closeio". tap_version
 # should be like 1.2.3.
 ENV STITCH_TAP_NAME {{cookiecutter.project_name}}
 ENV STITCH_TAP_PATH tap-env/bin/${STITCH_TAP_NAME}
