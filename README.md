@@ -1,4 +1,4 @@
-# cookiecutter-singer-tap
+# singer-tap-template
 
 A [cookiecutter](https://github.com/audreyr/cookiecutter) template for creating
 [Singer](https://github.com/singer-io) taps.
