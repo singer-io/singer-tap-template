@@ -51,3 +51,5 @@ These taps were built using this template:
 
 - [tap-zendesk-chat](https://github.com/singer-io/tap-zendesk-chat)
 - [tap-jira](https://github.com/singer-io/tap-jira)
+
+Copyright &copy; 2018 Stitch
