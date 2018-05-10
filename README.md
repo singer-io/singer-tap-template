@@ -35,21 +35,63 @@ Install the package:
 $ pip install -e .
 ```
 
-And invoke the tap:
+And invoke the tap in discovery mode to get the catalog:
 ```bash
-$ tap-foobar
-usage: tap-foobar [-h] -c CONFIG [-s STATE] [-p PROPERTIES]
-                  [--catalog CATALOG] [-d]
-tap-foobar: error: the following arguments are required: -c/--config
+$ tap-foobar -c sample_config.json --discover
+```
+The output should be a catalog with the single sample stream (from the schemas folder):
+```bash
+{
+  "streams": [
+    {
+      "metadata": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "string_field": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "datetime_field": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "double_field": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "integer_field": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "type": [
+          "null",
+          "object"
+        ]
+      },
+      "stream": "sample_stream",
+      "key_properties": [],
+      "tap_stream_id": "sample_stream"
+    }
+  ]
+}
+```
+If this catalog is saved to a `catalog.json` file, it can be passed back into the tap in sync mode:
+```
+tap-foobar -c sample_config.json --properties catalog.json
 ```
 
 Now you build the tap!
 
-## Example Taps
-
-These taps were built using this template:
-
-- [tap-zendesk-chat](https://github.com/singer-io/tap-zendesk-chat)
-- [tap-jira](https://github.com/singer-io/tap-jira)
 
 Copyright &copy; 2018 Stitch
