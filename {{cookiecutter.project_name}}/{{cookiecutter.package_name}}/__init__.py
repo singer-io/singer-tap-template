@@ -71,6 +71,8 @@ def sync(config, state, catalog):
         stream_schema = stream['schema']
         if stream_id in selected_stream_ids:
             # TODO: sync code for stream goes here...
+            LOGGER.info('Syncing stream:' + stream_id)
+    return
 
 @utils.handle_top_exception(LOGGER)
 def main():
@@ -91,7 +93,7 @@ def main():
         # 'catalog' is the current name
         elif args.catalog:
             catalog = args.catalog
-        else
+        else:
             catalog =  discover()
 
         sync(args.config, args.state, catalog)
