@@ -15,7 +15,7 @@ def load_schemas():
     schemas = {}
 
     for filename in os.listdir(get_abs_path('schemas')):
-        path = get_abs_path('tap_github') + '/' + filename
+        path = get_abs_path('schemas') + '/' + filename
         file_raw = filename.replace('.json', '')
         with open(path) as file:
             schemas[file_raw] = json.load(file)
@@ -65,6 +65,8 @@ def get_selected_streams(catalog):
 
 def sync(config, state, catalog):
 
+    selected_stream_ids = get_selected_streams(catalog)
+
     # Loop over streams in catalog
     for stream in catalog['streams']:
         stream_id = stream['tap_stream_id']
@@ -82,7 +84,7 @@ def main():
 
     # If discover flag was passed, run discovery mode and dump output to stdout
     if args.discover:
-        catalog = discover(ctx)
+        catalog = discover()
         print(json.dumps(catalog, indent=2))
     # Otherwise run in sync mode
     else:
