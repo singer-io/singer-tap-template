@@ -15,7 +15,7 @@ setup(
     ],
     entry_points="""
     [console_scripts]
-    {{cookiecutter.project_name}}={{cookiecutter.package_name}}:main
+    {{cookiecutter.project_name}}={{cookiecutter.package_name}}.__main__:main
     """,
     packages=["{{cookiecutter.package_name}}"],
     package_data = {
