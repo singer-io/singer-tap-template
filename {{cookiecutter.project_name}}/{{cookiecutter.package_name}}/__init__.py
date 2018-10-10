@@ -2,7 +2,7 @@
 import os
 import json
 import singer
-from singer import utils
+from singer import utils, metadata
 
 REQUIRED_CONFIG_KEYS = ["start_date", "username", "password"]
 LOGGER = singer.get_logger()
@@ -51,15 +51,11 @@ def get_selected_streams(catalog):
     and mdata with a 'selected' entry
     '''
     selected_streams = []
-    for stream in catalog['streams']:
-        stream_metadata = stream['metadata']
-        if stream['schema'].get('selected', False):
-            selected_streams.append(stream['tap_stream_id'])
-        else:
-            for entry in stream_metadata:
-                # stream metadata will have empty breadcrumb
-                if not entry['breadcrumb'] and entry['metadata'].get('selected',None):
-                    selected_streams.append(stream['tap_stream_id'])
+    for stream in catalog.streams:
+        stream_metadata = metadata.to_map(stream.metadata)
+        # stream metadata will have an empty breadcrumb
+        if metadata.get(stream_metadata, (), "selected"):
+            selected_streams.append(stream.tap_stream_id)
 
     return selected_streams
 
@@ -68,9 +64,9 @@ def sync(config, state, catalog):
     selected_stream_ids = get_selected_streams(catalog)
 
     # Loop over streams in catalog
-    for stream in catalog['streams']:
-        stream_id = stream['tap_stream_id']
-        stream_schema = stream['schema']
+    for stream in catalog.streams:
+        stream_id = stream.tap_stream_id
+        stream_schema = stream.schema
         if stream_id in selected_stream_ids:
             # TODO: sync code for stream goes here...
             LOGGER.info('Syncing stream:' + stream_id)
@@ -88,12 +84,7 @@ def main():
         print(json.dumps(catalog, indent=2))
     # Otherwise run in sync mode
     else:
-
-        # 'properties' is the legacy name of the catalog
-        if args.properties:
-            catalog = args.properties
-        # 'catalog' is the current name
-        elif args.catalog:
+        if args.catalog:
             catalog = args.catalog
         else:
             catalog =  discover()
