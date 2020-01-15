@@ -51,11 +51,11 @@ def get_selected_streams(catalog):
     and mdata with a 'selected' entry
     '''
     selected_streams = []
-    for stream in catalog.streams:
-        stream_metadata = metadata.to_map(stream.metadata)
+    for stream in catalog["streams"]:
+        stream_metadata = metadata.to_map(stream["metadata"])
         # stream metadata will have an empty breadcrumb
         if metadata.get(stream_metadata, (), "selected"):
-            selected_streams.append(stream.tap_stream_id)
+            selected_streams.append(stream["tap_stream_id"])
 
     return selected_streams
 
@@ -64,9 +64,9 @@ def sync(config, state, catalog):
     selected_stream_ids = get_selected_streams(catalog)
 
     # Loop over streams in catalog
-    for stream in catalog.streams:
-        stream_id = stream.tap_stream_id
-        stream_schema = stream.schema
+    for stream in catalog["streams"]:
+        stream_id = stream["tap_stream_id"]
+        stream_schema = stream["schema"]
         if stream_id in selected_stream_ids:
             # TODO: sync code for stream goes here...
             LOGGER.info('Syncing stream:' + stream_id)
