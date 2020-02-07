@@ -3,6 +3,7 @@ import os
 import json
 import singer
 from singer import utils, metadata
+from singer.catalog import Catalog
 
 REQUIRED_CONFIG_KEYS = ["start_date", "username", "password"]
 LOGGER = singer.get_logger()
@@ -42,7 +43,7 @@ def discover():
         }
         streams.append(catalog_entry)
 
-    return {'streams': streams}
+    return Catalog(streams)
 
 def get_selected_streams(catalog):
     '''
@@ -74,21 +75,19 @@ def sync(config, state, catalog):
 
 @utils.handle_top_exception(LOGGER)
 def main():
-
     # Parse command line arguments
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
 
     # If discover flag was passed, run discovery mode and dump output to stdout
     if args.discover:
         catalog = discover()
-        print(json.dumps(catalog, indent=2))
+        catalog.dump()
     # Otherwise run in sync mode
     else:
         if args.catalog:
             catalog = args.catalog
         else:
-            catalog =  discover()
-
+            catalog = discover()
         sync(args.config, args.state, catalog)
 
 if __name__ == "__main__":
