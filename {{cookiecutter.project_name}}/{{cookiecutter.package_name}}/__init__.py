@@ -3,7 +3,7 @@ import os
 import json
 import singer
 from singer import utils, metadata
-from singer.catalog import Catalog
+from singer.catalog import Catalog, CatalogEntry
 
 
 REQUIRED_CONFIG_KEYS = ["start_date", "username", "password"]
@@ -17,36 +17,37 @@ def get_abs_path(path):
 # Load schemas from schemas folder
 def load_schemas():
     schemas = {}
-
     for filename in os.listdir(get_abs_path('schemas')):
         path = get_abs_path('schemas') + '/' + filename
         file_raw = filename.replace('.json', '')
         with open(path) as file:
             schemas[file_raw] = json.load(file)
-
     return schemas
 
 
 def discover():
     raw_schemas = load_schemas()
     streams = []
-
     for schema_name, schema in raw_schemas.items():
-
         # TODO: populate any metadata and stream's key properties here..
         stream_metadata = []
-        stream_key_properties = []
-
-        # create and add catalog entry
-        catalog_entry = {
-            'stream': schema_name,
-            'tap_stream_id': schema_name,
-            'schema': schema,
-            'metadata' : [],
-            'key_properties': []
-        }
-        streams.append(catalog_entry)
-
+        key_properties = []
+        streams.append(
+            CatalogEntry(
+                tap_stream_id=schema_name,
+                stream=schema_name,
+                schema=schema,
+                key_properties=key_properties,
+                metadata=stream_metadata,
+                replication_key=None,
+                is_view=None,
+                database=None,
+                table=None,
+                row_count=None,
+                stream_alias=None,
+                replication_method=None,
+            )
+        )
     return Catalog(streams)
 
 
