@@ -7,6 +7,7 @@ from singer.catalog import Catalog, CatalogEntry
 from singer.schema import Schema
 
 
+DEFAULT_BATCH_SIZE = 1000
 REQUIRED_CONFIG_KEYS = ["start_date", "username", "password"]
 LOGGER = singer.get_logger()
 
@@ -52,15 +53,47 @@ def discover():
     return Catalog(streams)
 
 
+def read_all_data():
+    """ Read all rows from upstream source and return data in proper json format """
+    # TODO: Replace with real logic to retrieve data
+    for dummy_value in range(10000):
+        yield {"id": dummy_value, "name": str(dummy_value)}
+
+
+def get_row_batches(batch_size=1):
+    """ Return lists of data rows according to batch_size """
+    queued = []
+    queued_count = 0
+    for item in read_all_data():
+        queued.append(item)
+        queued_count += 1
+        if queued_count >= batch_size:
+            yield queued
+            queued = []
+            queued_count = 0
+    if queued:
+        yield queued
+
+
 def sync(config, state, catalog):
+    """ Sync data from tap source """
     selected_stream_ids = catalog.get_selected_streams(state)
     # Loop over streams in catalog
     for stream in catalog.streams:
         stream_id = stream.tap_stream_id
-        stream_schema = stream.schema
-        if stream_id in selected_stream_ids:
-            # TODO: sync code for stream goes here...
-            LOGGER.info('Syncing stream:' + stream_id)
+        LOGGER.info("Syncing stream:" + stream_id)
+
+        # TODO: initialize key and bookmark columns
+        key_columns = ["id"]
+        bookmark_column = "id"
+
+        singer.write_schema(
+            stream_name=stream_id, schema=stream.schema, key_properties=key_columns,
+        )
+        for rows in get_row_batches(DEFAULT_BATCH_SIZE):
+            singer.write_records(stream_id, rows)
+            if bookmark_column:
+                singer.write_state({stream_id: row[bookmark_column]})
     return
 
 
