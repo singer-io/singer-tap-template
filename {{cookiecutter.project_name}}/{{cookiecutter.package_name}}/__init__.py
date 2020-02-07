@@ -5,11 +5,14 @@ import singer
 from singer import utils, metadata
 from singer.catalog import Catalog
 
+
 REQUIRED_CONFIG_KEYS = ["start_date", "username", "password"]
 LOGGER = singer.get_logger()
 
+
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
+
 
 # Load schemas from schemas folder
 def load_schemas():
@@ -22,6 +25,7 @@ def load_schemas():
             schemas[file_raw] = json.load(file)
 
     return schemas
+
 
 def discover():
     raw_schemas = load_schemas()
@@ -45,25 +49,9 @@ def discover():
 
     return Catalog(streams)
 
-def get_selected_streams(catalog):
-    '''
-    Gets selected streams.  Checks schema's 'selected' first (legacy)
-    and then checks metadata (current), looking for an empty breadcrumb
-    and mdata with a 'selected' entry
-    '''
-    selected_streams = []
-    for stream in catalog.streams:
-        stream_metadata = metadata.to_map(stream.metadata)
-        # stream metadata will have an empty breadcrumb
-        if metadata.get(stream_metadata, (), "selected"):
-            selected_streams.append(stream.tap_stream_id)
-
-    return selected_streams
 
 def sync(config, state, catalog):
-
-    selected_stream_ids = get_selected_streams(catalog)
-
+    selected_stream_ids = catalog.get_selected_streams(state)
     # Loop over streams in catalog
     for stream in catalog.streams:
         stream_id = stream.tap_stream_id
@@ -72,6 +60,7 @@ def sync(config, state, catalog):
             # TODO: sync code for stream goes here...
             LOGGER.info('Syncing stream:' + stream_id)
     return
+
 
 @utils.handle_top_exception(LOGGER)
 def main():
@@ -89,6 +78,7 @@ def main():
         else:
             catalog = discover()
         sync(args.config, args.state, catalog)
+
 
 if __name__ == "__main__":
     main()
