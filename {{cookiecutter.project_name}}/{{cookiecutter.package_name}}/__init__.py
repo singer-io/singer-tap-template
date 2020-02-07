@@ -4,6 +4,7 @@ import json
 import singer
 from singer import utils, metadata
 from singer.catalog import Catalog, CatalogEntry
+from singer.schema import Schema
 
 
 REQUIRED_CONFIG_KEYS = ["start_date", "username", "password"]
@@ -14,14 +15,14 @@ def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 
-# Load schemas from schemas folder
 def load_schemas():
+    """ Load schemas from schemas folder """
     schemas = {}
     for filename in os.listdir(get_abs_path('schemas')):
         path = get_abs_path('schemas') + '/' + filename
         file_raw = filename.replace('.json', '')
         with open(path) as file:
-            schemas[file_raw] = json.load(file)
+            schemas[file_raw] = Schema.from_dict(json.load(file))
     return schemas
 
 
