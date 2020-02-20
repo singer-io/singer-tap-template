@@ -30,14 +30,14 @@ def load_schemas():
 def discover():
     raw_schemas = load_schemas()
     streams = []
-    for schema_name, schema in raw_schemas.items():
+    for stream_id, schema in raw_schemas.items():
         # TODO: populate any metadata and stream's key properties here..
         stream_metadata = []
         key_properties = []
         streams.append(
             CatalogEntry(
-                tap_stream_id=schema_name,
-                stream=schema_name,
+                tap_stream_id=stream_id,
+                stream=stream_id,
                 schema=schema,
                 key_properties=key_properties,
                 metadata=stream_metadata,
@@ -58,16 +58,15 @@ def sync(config, state, catalog):
     selected_stream_ids = catalog.get_selected_streams(state)
     # Loop over streams in catalog
     for stream in catalog.streams:
-        stream_id = stream.tap_stream_id
-        LOGGER.info("Syncing stream:" + stream_id)
+        LOGGER.info("Syncing stream:" + stream.tap_stream_id)
 
-        # TODO: initialize key and bookmark columns
-        key_columns = ["id"]
-        bookmark_column = "id"
-        is_sorted = True  # whether data is sorted ascending on bookmark value
+        bookmark_column = stream.replication_key
+        is_sorted = True  # TODO: indicate whether data is sorted ascending on bookmark value
 
         singer.write_schema(
-            stream_name=stream_id, schema=stream.schema, key_properties=key_columns,
+            stream_name=stream.tap_stream_id,
+            schema=stream.schema,
+            key_properties=stream.key_properties,
         )
 
         # TODO: delete and replace this inline function with your own data retrieval process:
@@ -78,16 +77,16 @@ def sync(config, state, catalog):
             # TODO: place type conversions or transformations here
 
             # write one or more rows to the stream:
-            singer.write_records(stream_id, [row])
+            singer.write_records(stream.tap_stream_id, [row])
             if bookmark_column:
                 if is_sorted:
                     # update bookmark to latest value
-                    singer.write_state({stream_id: row[bookmark_column]})
+                    singer.write_state({stream.tap_stream_id: row[bookmark_column]})
                 else:
                     # if data unsorted, save max value until end of writes
                     max_bookmark = max(max_bookmark, row[bookmark_column])
         if bookmark_column and not is_sorted:
-            singer.write_state({stream_id: max_bookmark})
+            singer.write_state({stream.tap_stream_id: max_bookmark})
     return
 
 
