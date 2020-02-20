@@ -53,28 +53,6 @@ def discover():
     return Catalog(streams)
 
 
-def read_all_data():
-    """ Read all rows from upstream source and return data in proper json format """
-    # TODO: Replace with real logic to retrieve data
-    for dummy_value in range(10000):
-        yield {"id": dummy_value, "name": str(dummy_value)}
-
-
-def get_row_batches(batch_size=1):
-    """ Return lists of data rows according to batch_size """
-    queued = []
-    queued_count = 0
-    for item in read_all_data():
-        queued.append(item)
-        queued_count += 1
-        if queued_count >= batch_size:
-            yield queued
-            queued = []
-            queued_count = 0
-    if queued:
-        yield queued
-
-
 def sync(config, state, catalog):
     """ Sync data from tap source """
     selected_stream_ids = catalog.get_selected_streams(state)
@@ -90,8 +68,15 @@ def sync(config, state, catalog):
         singer.write_schema(
             stream_name=stream_id, schema=stream.schema, key_properties=key_columns,
         )
-        for rows in get_row_batches(DEFAULT_BATCH_SIZE):
-            singer.write_records(stream_id, rows)
+
+        # TODO: delete and replace this inline function with your own data retrieval process:
+        tap_data = lambda: [{"id": x, "name": "row${x}"} for x in range(1000)]
+
+        for row in tap_data():
+            # TODO: place type conversions or transformations here
+
+            # write one or more rows to the stream:
+            singer.write_records(stream_id, [row]) 
             if bookmark_column:
                 singer.write_state({stream_id: row[bookmark_column]})
     return
