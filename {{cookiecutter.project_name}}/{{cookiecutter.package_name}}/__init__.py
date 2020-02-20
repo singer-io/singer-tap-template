@@ -7,7 +7,6 @@ from singer.catalog import Catalog, CatalogEntry
 from singer.schema import Schema
 
 
-DEFAULT_BATCH_SIZE = 1000
 REQUIRED_CONFIG_KEYS = ["start_date", "username", "password"]
 LOGGER = singer.get_logger()
 
