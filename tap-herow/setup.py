@@ -2,24 +2,24 @@
 from setuptools import setup
 
 setup(
-    name="{{cookiecutter.project_name}}",
+    name="tap-herow",
     version="0.1.0",
     description="Singer.io tap for extracting data",
     author="Stitch",
     url="http://singer.io",
     classifiers=["Programming Language :: Python :: 3 :: Only"],
-    py_modules=["{{cookiecutter.package_name}}"],
+    py_modules=["tap_herow"],
     install_requires=[
         "singer-python>=5.0.12",
         "requests",
     ],
     entry_points="""
     [console_scripts]
-    {{cookiecutter.project_name}}={{cookiecutter.package_name}}:main
+    tap-herow=tap_herow:main
     """,
-    packages=["{{cookiecutter.package_name}}"],
+    packages=["tap_herow"],
     package_data = {
-        "schemas": ["{{cookiecutter.package_name}}/schemas/*.json"]
+        "schemas": ["tap_herow/schemas/*.json"]
     },
     include_package_data=True,
 )

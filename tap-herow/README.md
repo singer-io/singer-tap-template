@@ -1,4 +1,4 @@
-# {{cookiecutter.project_name}}
+# tap-herow
 
 This is a [Singer](https://singer.io) tap that produces JSON-formatted data
 following the [Singer
