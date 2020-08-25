@@ -1,0 +1,53 @@
+{
+  "streams": [
+    {
+      "tap_stream_id": "users",
+      "key_properties": [],
+      "schema": {
+        "properties": {
+          "id": {
+            "type": [
+              "integer"
+            ]
+          },
+          "name": {
+            "type": [
+              "string"
+            ]
+          },
+          "updated_at": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": [
+          "null",
+          "object"
+        ]
+      },
+      "stream": "users",
+      "metadata": [
+        {
+          "breadcrumb": [],
+          "metadata": {
+            "table-key-properties": [
+              "id"
+            ],
+            "forced-replication-method": "INCREMENTAL",
+            "selected": true,
+            "valid-replication-keys": [
+              "updated_at"
+            ]
+          }
+        }
+      ],
+      "key_properties": [
+        "id"
+      ],
+      "replication_key": "id",
+      "replication_method": "INCREMENTAL"
+    }
+  ]
+}
