@@ -1,4 +1,0 @@
-{
-  "project_name": "e.g. 'tap-facebook'",
-  "package_name": "{{cookiecutter.project_name.replace('-','_')}}"
-}
