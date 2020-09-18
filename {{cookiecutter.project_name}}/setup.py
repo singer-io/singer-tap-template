@@ -10,7 +10,8 @@ setup(
     classifiers=["Programming Language :: Python :: 3 :: Only"],
     py_modules=["{{cookiecutter.package_name}}"],
     install_requires=[
-        "singer-python>=5.0.12",
+        # NB: Pin these to a more specific version for tap reliability
+        "singer-python",
         "requests",
     ],
     entry_points="""
