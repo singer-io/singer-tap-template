@@ -82,7 +82,10 @@ def sync(config, state, catalog):
                     singer.write_state({stream.tap_stream_id: row[bookmark_column]})
                 else:
                     # if data unsorted, save max value until end of writes
-                    max_bookmark = max(max_bookmark, row[bookmark_column])
+                    if max_bookmark is None:
+                        max_bookmark = row[bookmark_column]
+                    else:
+                        max_bookmark = max(max_bookmark, row[bookmark_column])
         if bookmark_column and not is_sorted:
             singer.write_state({stream.tap_stream_id: max_bookmark})
     return
